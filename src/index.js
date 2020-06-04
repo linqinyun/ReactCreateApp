@@ -11,18 +11,6 @@ function Square(props) {
     </button>
   )
 }
-// class Square extends React.Component {
-//   render() {
-//     return (
-//       <button
-//         className="square"
-//         onClick={() => this.props.onClick()}
-//       >
-//         {this.props.value}
-//       </button>
-//     );
-//   }
-// }
 
 class Board extends React.Component {
   renderSquare(i) {
@@ -33,7 +21,6 @@ class Board extends React.Component {
       />
     );
   }
-
   render() {
     return (
       <div>
@@ -58,21 +45,33 @@ class Game extends React.Component {
       history: [{
         squares: Array(9).fill(null)
       }],
+      position: [{
+        row: null,
+        colum: null
+      }],
       stepNumber: 0,
       xIsNext: true
     }
   }
   handleClick(i) {
     const history = this.state.history.slice(0, this.state.stepNumber + 1)
+    const position = this.state.position.slice(0, this.state.stepNumber + 1)
+    // console.log(position)
     const current = history[history.length - 1]
     const squares = current.squares.slice()
     if (calculateWinner(squares) || squares[i]) {
       return
     }
     squares[i] = this.state.xIsNext ? 'X' : 'O';
+    const row = parseInt(i % 3 + 1)
+    const colum = parseInt(i / 3 + 1)
     this.setState({
       history: history.concat([{
         squares: squares
+      }]),
+      position: position.concat([{
+        row: row,
+        colum: colum
       }]),
       stepNumber: history.length,
       xIsNext: !this.state.xIsNext
