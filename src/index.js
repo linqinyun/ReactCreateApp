@@ -22,17 +22,20 @@ class Board extends React.Component {
     );
   }
   render() {
+
     return (
       <div>
-        <div className="board-row">
-          {this.renderSquare(0)}{this.renderSquare(1)}{this.renderSquare(2)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(3)}{this.renderSquare(4)}{this.renderSquare(5)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(6)}{this.renderSquare(7)}{this.renderSquare(8)}
-        </div>
+        {
+          Array(3).fill(null).map((item, x) => (
+            <div className="board-row" key={x}>
+              {
+                Array(3).fill(null).map((itemy, y) => (
+                  this.renderSquare(3 * x + y)
+                ))
+              }
+            </div>
+          ))
+        }
       </div>
     );
   }
@@ -50,7 +53,8 @@ class Game extends React.Component {
         colum: null
       }],
       stepNumber: 0,
-      xIsNext: true
+      xIsNext: true,
+      sort: true
     }
   }
   handleClick(i) {
@@ -83,23 +87,37 @@ class Game extends React.Component {
       xIsNext: (step % 2) === 0
     })
   }
+  changeSquence() {
+    this.setState({
+      sort: !this.state.sort,
+    });
+  }
   render() {
     const history = this.state.history
     const current = history[this.state.stepNumber]
     const winner = calculateWinner(current.squares)
     const moves = history.map((step, move) => {
       const desc = move ?
-        'Go to move #' + move :
+        'Go to move #' + move + '最后落棋点:(' + this.state.position[move].colum + ',' + this.state.position[move].row + ')' :
         'Go to game start'
+      let font = (move === this.state.stepNumber) ?
+        { fontWeight: 'bold' } :
+        { fontWeight: 'normal' }
       return (
         <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+          <button style={font} onClick={() => this.jumpTo(move)}>{desc}</button>
         </li>
       )
     })
     let status
     if (winner) {
-      status = 'Winner: ' + winner
+      status = "Winner：" + winner.winnerName;
+      for (let i of winner.squares) {
+        document.getElementsByClassName('square')[i].style = "background: lightblue;";
+      }
+
+    } else if (this.state.stepNumber === 9) {
+      status = 'no winner'
     } else {
       status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O')
     }
@@ -113,7 +131,9 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <ol>{moves}</ol>
+          {/*4.添加一个可以升序或降序显示历史记录的按钮。*/}
+          <button onClick={() => this.changeSquence()}>{this.state.sort ? "倒序" : "正序"}</button>
+          <ol>{this.state.sort ? moves : moves.reverse()}</ol>
         </div>
       </div>
     );
@@ -141,7 +161,10 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return {
+        squares: [a, b, c],
+        winnerName: squares[a],
+      }
     }
   }
   return null;
